@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export const Greeting = () => {
   return (
@@ -8,12 +9,19 @@ export const Greeting = () => {
     >
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="font-semibold text-xl md:text-2xl"
+        className="mb-2 flex items-center gap-3 font-semibold text-xl md:text-2xl"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
       >
-        Hello there!
+        <Image
+          src="/earnix.svg"
+          alt="Earnix Logo"
+          width={24}
+          height={24}
+          className="opacity-90"
+        />
+        Hello, Earnix Team!
       </motion.div>
       <motion.div
         animate={{ opacity: 1, y: 0 }}
@@ -22,7 +30,7 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.6 }}
       >
-        How can I help you today?
+        Welcome to your AI assistant. How can I help you today?
       </motion.div>
     </div>
   );

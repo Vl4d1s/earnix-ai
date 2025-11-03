@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     // Skip type checking during build for simplified POC
     ignoreBuildErrors: true,
   },
+  devIndicators: false,
   eslint: {
     ignoreDuringBuilds: true,
   },

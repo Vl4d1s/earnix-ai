@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
@@ -67,12 +68,20 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   setOpenMobile(false);
                 }}
               >
+                <Image
+                  src="/earnix.svg"
+                  alt="Earnix Logo"
+                  width={32}
+                  height={32}
+                  className="shrink-0"
+                />
                 <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                  Earnix AI
                 </span>
               </Link>
               <div className="flex flex-row gap-1">
-                {user && (
+                {/* Delete All button hidden for POC - no persistence */}
+                {/* {user && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -88,7 +97,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                       Delete All Chats
                     </TooltipContent>
                   </Tooltip>
-                )}
+                )} */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -115,7 +124,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         <SidebarContent>
           <SidebarHistory user={user} />
         </SidebarContent>
-        <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+        <SidebarFooter>{user && <SidebarUserNav user={{email: 'vladism@earnix.com', type: 'guest'}} />}</SidebarFooter>
       </Sidebar>
 
       <AlertDialog onOpenChange={setShowDeleteAllDialog} open={showDeleteAllDialog}>

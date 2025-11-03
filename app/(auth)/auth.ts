@@ -42,8 +42,8 @@ export const {
       async authorize() {
         // For stateless POC, return a mock guest user without database
         return {
-          id: "guest-user",
-          email: "guest@example.com",
+          id: "vladism",
+          email: "vladism@earnix.com",
           type: "guest" as UserType,
         };
       },
