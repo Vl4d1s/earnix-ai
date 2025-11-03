@@ -1,16 +1,12 @@
 "use server";
 
-import { generateText, type UIMessage } from "ai";
 import { cookies } from "next/headers";
 import type { VisibilityType } from "@/components/visibility-selector";
-import { myProvider } from "@/lib/ai/providers";
-import { titlePrompt } from "@/lib/ai/prompts";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisibilityById,
 } from "@/lib/db/queries";
-import { getTextFromMessage } from "@/lib/utils";
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -20,24 +16,35 @@ export async function saveChatModelAsCookie(model: string) {
 export async function generateTitleFromUserMessage({
   message,
 }: {
-  message: UIMessage;
+  message: any;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel("title-model"),
-    system: titlePrompt,
-    prompt: getTextFromMessage(message),
-  });
-
-  return title;
+  // Title generation removed for simplified POC
+  // Return a simple timestamp-based title
+  return "Chat " + new Date().toLocaleDateString();
 }
 
-export async function deleteTrailingMessages({ id }: { id: string }) {
+export async function deleteTrailingMessages({
+  id,
+}: {
+  id: string;
+}) {
   const [message] = await getMessageById({ id });
+
+  if (!message) {
+    return {
+      type: "error" as const,
+      error: "Message not found",
+    };
+  }
 
   await deleteMessagesByChatIdAfterTimestamp({
     chatId: message.chatId,
     timestamp: message.createdAt,
   });
+
+  return {
+    type: "success" as const,
+  };
 }
 
 export async function updateChatVisibility({

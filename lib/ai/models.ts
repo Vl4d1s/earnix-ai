@@ -1,21 +1,16 @@
-export const DEFAULT_CHAT_MODEL: string = "chat-model";
+// Simple model constants for Flask backend
 
-export type ChatModel = {
-  id: string;
-  name: string;
-  description: string;
-};
+export const DEFAULT_CHAT_MODEL = "gpt-4o-mini";
 
-export const chatModels: ChatModel[] = [
+export const chatModels = [
   {
-    id: "chat-model",
-    name: "Grok Vision",
-    description: "Advanced multimodal model with vision and text capabilities",
+    id: "gpt-4o-mini",
+    name: "GPT-4o Mini",
+    description: "Fast and efficient",
   },
   {
-    id: "chat-model-reasoning",
-    name: "Grok Reasoning",
-    description:
-      "Uses advanced chain-of-thought reasoning for complex problems",
+    id: "gpt-4o",
+    name: "GPT-4o",
+    description: "Most capable model",
   },
 ];

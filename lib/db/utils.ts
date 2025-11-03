@@ -1,4 +1,8 @@
-import { generateId } from "ai";
+import { nanoid } from "nanoid";
+
+function generateId() {
+  return nanoid();
+}
 import { genSaltSync, hashSync } from "bcrypt-ts";
 
 export function generateHashedPassword(password: string) {

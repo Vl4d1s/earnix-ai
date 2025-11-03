@@ -1,52 +1,34 @@
-import type { UseChatHelpers } from "@ai-sdk/react";
-import equal from "fast-deep-equal";
-import { AnimatePresence } from "framer-motion";
-import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect } from "react";
-import { useMessages } from "@/hooks/use-messages";
-import type { Vote } from "@/lib/db/schema";
-import type { ChatMessage } from "@/lib/types";
-import { useDataStream } from "./data-stream-provider";
+import { memo, useEffect, useRef } from "react";
+import type { ChatMessage, ChatStatus } from "@/lib/hooks/use-simple-chat";
 import { Conversation, ConversationContent } from "./elements/conversation";
 import { Greeting } from "./greeting";
-import { PreviewMessage, ThinkingMessage } from "./message";
+import { PreviewMessage } from "./message";
 
 type MessagesProps = {
   chatId: string;
-  status: UseChatHelpers<ChatMessage>["status"];
-  votes: Vote[] | undefined;
+  status: ChatStatus;
   messages: ChatMessage[];
-  setMessages: UseChatHelpers<ChatMessage>["setMessages"];
-  regenerate: UseChatHelpers<ChatMessage>["regenerate"];
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  regenerate: () => void;
   isReadonly: boolean;
-  isArtifactVisible: boolean;
   selectedModelId: string;
 };
 
 function PureMessages({
   chatId,
   status,
-  votes,
   messages,
   setMessages,
   regenerate,
   isReadonly,
   selectedModelId,
 }: MessagesProps) {
-  const {
-    containerRef: messagesContainerRef,
-    endRef: messagesEndRef,
-    isAtBottom,
-    scrollToBottom,
-    hasSentMessage,
-  } = useMessages({
-    status,
-  });
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useDataStream();
-
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (status === "submitted") {
+    if (status === "streaming" || status === "submitted") {
       requestAnimationFrame(() => {
         const container = messagesContainerRef.current;
         if (container) {
@@ -57,7 +39,7 @@ function PureMessages({
         }
       });
     }
-  }, [status, messagesContainerRef]);
+  }, [status, messages.length]);
 
   return (
     <div
@@ -79,63 +61,39 @@ function PureMessages({
               key={message.id}
               message={message}
               regenerate={regenerate}
-              requiresScrollPadding={
-                hasSentMessage && index === messages.length - 1
-              }
+              selectedModelId={selectedModelId}
               setMessages={setMessages}
-              vote={
-                votes
-                  ? votes.find((vote) => vote.messageId === message.id)
-                  : undefined
-              }
             />
           ))}
 
-          <AnimatePresence mode="wait">
-            {status === "submitted" && <ThinkingMessage key="thinking" />}
-          </AnimatePresence>
+          {status === "submitted" && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              Thinking...
+            </div>
+          )}
 
-          <div
-            className="min-h-[24px] min-w-[24px] shrink-0"
-            ref={messagesEndRef}
-          />
+          <div ref={messagesEndRef} />
         </ConversationContent>
       </Conversation>
-
-      {!isAtBottom && (
-        <button
-          aria-label="Scroll to bottom"
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
-          onClick={() => scrollToBottom("smooth")}
-          type="button"
-        >
-          <ArrowDownIcon className="size-4" />
-        </button>
-      )}
     </div>
   );
 }
 
-export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) {
-    return true;
-  }
+export const Messages = memo(
+  PureMessages,
+  (prevProps, nextProps) => {
+    // Allow re-renders during streaming for smooth updates
+    if (prevProps.status === 'streaming' || nextProps.status === 'streaming') {
+      return false; // Always re-render during streaming
+    }
 
-  if (prevProps.status !== nextProps.status) {
-    return false;
+    // Otherwise, only re-render if messages actually changed
+    return (
+      prevProps.status === nextProps.status &&
+      prevProps.messages.length === nextProps.messages.length &&
+      prevProps.messages[prevProps.messages.length - 1]?.content ===
+        nextProps.messages[nextProps.messages.length - 1]?.content
+    );
   }
-  if (prevProps.selectedModelId !== nextProps.selectedModelId) {
-    return false;
-  }
-  if (prevProps.messages.length !== nextProps.messages.length) {
-    return false;
-  }
-  if (!equal(prevProps.messages, nextProps.messages)) {
-    return false;
-  }
-  if (!equal(prevProps.votes, nextProps.votes)) {
-    return false;
-  }
-
-  return false;
-});
+);

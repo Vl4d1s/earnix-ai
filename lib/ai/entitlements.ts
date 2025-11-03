@@ -1,29 +1,10 @@
-import type { UserType } from "@/app/(auth)/auth";
-import type { ChatModel } from "./models";
+// Simplified entitlements for POC
 
-type Entitlements = {
-  maxMessagesPerDay: number;
-  availableChatModelIds: ChatModel["id"][];
-};
-
-export const entitlementsByUserType: Record<UserType, Entitlements> = {
-  /*
-   * For users without an account
-   */
+export const entitlementsByUserType = {
   guest: {
-    maxMessagesPerDay: 20,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning"],
+    models: ["gpt-4o-mini", "gpt-4o"],
   },
-
-  /*
-   * For users with an account
-   */
-  regular: {
-    maxMessagesPerDay: 100,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning"],
+  user: {
+    models: ["gpt-4o-mini", "gpt-4o"],
   },
-
-  /*
-   * TODO: For users with an account and a paid membership
-   */
 };
