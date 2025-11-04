@@ -165,9 +165,43 @@ export function useSimpleChat({
 
             if (dataLine) {
               try {
+                // Handle literal [DONE] string
+                if (dataLine === '[DONE]') {
+                  setStatus('ready');
+                  onFinish?.();
+                  continue;
+                }
+
                 const data = JSON.parse(dataLine);
 
-                if (data.type === 'content') {
+                // Handle OpenAI-compatible format
+                if (data.choices && data.choices.length > 0) {
+                  const choice = data.choices[0];
+
+                  // Check for completion
+                  if (choice.finish_reason === 'stop' || choice.finish_reason === 'length') {
+                    setStatus('ready');
+                    onFinish?.();
+                    continue;
+                  }
+
+                  // Extract content from delta
+                  if (choice.delta && choice.delta.content) {
+                    currentAssistantMessageRef.current += choice.delta.content;
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? {
+                              ...msg,
+                              content: currentAssistantMessageRef.current,
+                            }
+                          : msg
+                      )
+                    );
+                  }
+                }
+                // Fallback to custom format for backward compatibility
+                else if (data.type === 'content') {
                   // Update assistant message with new content
                   currentAssistantMessageRef.current += data.content;
                   setMessages((prev) =>
